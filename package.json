@@ -20,8 +20,11 @@
   "dependencies": {
     "@google-cloud/datastore": "^1.4.1",
     "@google-cloud/storage": "^1.7.0",
+    "bell": "^9.3.1",
     "googleapis": "^32.0.0",
-    "hapi": "^17.5.2"
+    "hapi": "^17.5.2",
+    "sillyname": "^0.1.0",
+    "url-metadata": "^2.1.7"
   },
   "devDependencies": {
     "eslint": "^5.2.0"
