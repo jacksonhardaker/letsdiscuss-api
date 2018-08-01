@@ -9,7 +9,9 @@ module.exports = function(config) {
   async function save(token, data) {
     // Updating existing user?
     let personId = await getId(token);
-    let key = personId ? datastore.key(['Person', datastore.int(personId)]) : datastore.key('Person');
+    let key = personId
+      ? datastore.key(['Person', datastore.int(personId)])
+      : datastore.key('Person');
 
     let entity = {
       key: key,
@@ -29,13 +31,13 @@ module.exports = function(config) {
   async function get(token) {
     let result = await _get(token);
 
-    return result[0];
+    return result ? result[0] : result;
   }
 
   async function getId(token) {
     let result = await _get(token);
 
-    return result[0][datastore.KEY].id;
+    return result ? result[0][datastore.KEY].id : result;
   }
 
   /**
@@ -44,11 +46,15 @@ module.exports = function(config) {
 
   async function _get(token) {
     // Create query
-    let query = datastore.createQuery(['Person']).filter('token', '=', token);
+    if (token) {
+      let query = datastore.createQuery(['Person']).filter('token', '=', token);
 
-    let result = await datastore.runQuery(query);
+      let result = await datastore.runQuery(query);
 
-    return result[0];
+      return result[0];
+    }
+
+    return null;
   }
 
   return {
