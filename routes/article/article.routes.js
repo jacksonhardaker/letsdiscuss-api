@@ -19,18 +19,13 @@ module.exports = function(server, config, Joi) {
         }
       },
       tags: ['api'],
-      handler: (request, h) => {
+      handler: async (request, h) => {
         let params = request.query;
 
-        return new Promise((resolve, reject) => {
-          Article.createWithAlias(params.token.trim(), params.url.trim())
-            .then(result => {
-              resolve(result);
-            })
-            .catch(err => {
-              reject(err);
-            });
-        });
+        return await Article.createWithAlias(
+          params.token.trim(),
+          params.url.trim()
+        );
       }
     }
   });
@@ -54,20 +49,14 @@ module.exports = function(server, config, Joi) {
         }
       },
       tags: ['api'],
-      handler: (request, h) => {
+      handler: async (request, h) => {
         const alias = request.params.alias;
         const date = request.params.date;
         const slug = request.params.slug;
 
-        return new Promise((resolve, reject) => {
-          Article.get(alias, date, slug)
-            .then(result => {
-              resolve(result);
-            })
-            .catch(err => {
-              reject(err);
-            });
-        });
+        let data = await Article.get(alias, date, slug);
+
+        return data ? data : h.response().code(404);
       }
     }
   });
