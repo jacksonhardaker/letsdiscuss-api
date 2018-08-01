@@ -1,7 +1,9 @@
 module.exports = function(config) {
   const Datastore = require('@google-cloud/datastore');
   const UrlMetadata = require('url-metadata');
-  const Slugify = require('slugify');
+  const Moment = require('moment');
+  const Utils = require('../../utils');
+  const SillyName = require('sillyname');
   const Person = require('../person/person')(config);
   const Alias = require('../alias/alias')(config);
 
@@ -22,7 +24,7 @@ module.exports = function(config) {
         return save(token, url, transaction, allocatedId);
       })
       .then(() => {
-          return Alias.create(token, allocatedId, transaction);
+        return Alias.create(token, allocatedId, transaction);
       })
       .then(results => {
         return transaction.commit();
@@ -36,28 +38,43 @@ module.exports = function(config) {
     // Get user from token
     let creator = await Person.getId(token);
 
-    var entity = {
+    let moment = Moment();
+    let slug = `${Utils.slugify(SillyName())}/${moment.format(
+      'YYYY-MM-DD'
+    )}/${Utils.slugify(metadata.title)}`;
+
+    let entity = {
       key: datastore.key(['Article', id ? datastore.int(id) : null]), // Init with allocated id
       data: {
         createdBy: creator,
-        createdDate: new Date(),
+        createdDate: moment.format(),
         url: url,
         title: metadata.title,
         image: metadata.image,
         author: metadata.author,
         description: metadata.description,
-        slug: Slugify(metadata.title, {
-          replacement: '-',
-          remove: /[$*_+~.()'"!\-:@]/g,
-          lower: true
-        })
+        slug: slug
       }
     };
 
     return transaction.save(entity);
   }
 
+  async function get(alias, date, slug) {
+    let query = datastore.createQuery(['Article']).filter('slug', '=', `${alias}/${date}/${slug}`);
+
+    return datastore.runQuery(query);
+  }
+
+  async function getById(id) {
+    let query = datastore.createQuery(['Article']).filter('id', '=', id);
+
+    return datastore.runQuery(query);
+  }
+
   return {
-    createWithAlias: createWithAlias
+    createWithAlias: createWithAlias,
+    get: get,
+    getById: getById
   };
 };

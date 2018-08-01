@@ -12,7 +12,7 @@ module.exports = function(config) {
     // Get person from token
     let id = await Person.getId(token);
 
-    var entity = {
+    let entity = {
       key: datastore.key('Alias'),
       data: {
         person: id,
@@ -30,7 +30,20 @@ module.exports = function(config) {
     }
   }
 
+  async function get(token, article) {
+    // Get person from token
+    let person = await Person.getId(token);
+
+    // Create query
+    let query = datastore.createQuery(['Alias'])
+    .filter('article', '=', article)
+    .filter('person', '=', person);
+
+    return datastore.runQuery(query);
+  }
+
   return {
-    create: create
+    create: create,
+    get: get
   };
 };

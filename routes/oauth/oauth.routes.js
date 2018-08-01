@@ -1,6 +1,6 @@
 module.exports = function(server, config) {
   /* Require services for querying, creating, and deleting entities */
-  const googleAuth = require('./google')(config);
+  const GoogleAuth = require('./google')(config);
 
   server.route({
     method: '*',
@@ -19,16 +19,14 @@ module.exports = function(server, config) {
         let params = request.auth.credentials.query;
 
         return new Promise((resolve, reject) => {
-          googleAuth
-            .login(
-              request.auth.credentials,
-              params.token ? params.token : null // Existing token included?
-            )
-            .then(personId => {
-              resolve({
-                token: request.auth.credentials.token
-              });
+          GoogleAuth.login(
+            request.auth.credentials,
+            params.token ? params.token : null // Existing token included?
+          ).then(personId => {
+            resolve({
+              token: request.auth.credentials.token
             });
+          });
         });
       }
     }

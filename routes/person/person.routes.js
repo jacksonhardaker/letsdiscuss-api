@@ -1,6 +1,6 @@
 module.exports = function(server, config) {
   /* Require services for querying, creating, and deleting entities */
-  const person = require('./routes/person/person')(config);
+  const Person = require('./person')(config);
 
   server.route({
     method: 'GET',
@@ -9,7 +9,7 @@ module.exports = function(server, config) {
       handler: (request, h) => {
         let params = request.query;
 
-        return person.get(params.token);
+        return Person.get(params.token);
       }
     }
   });
