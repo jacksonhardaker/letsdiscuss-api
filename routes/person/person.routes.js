@@ -15,10 +15,12 @@ module.exports = function(server, config, Joi) {
         }
       },
       tags: ['api'],
-      handler: (request, h) => {
+      handler: async (request, h) => {
         let params = request.query;
 
-        return Person.get(params.token.trim());
+        let data = await Person.get(params.token.trim());
+
+        return data ? data : h.response().code(404);
       }
     }
   });

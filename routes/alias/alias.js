@@ -27,7 +27,24 @@ module.exports = function(config) {
     return transaction ? transaction.save(entity) : datastore.save(entity);
   }
 
-  async function _get(token, article) {
+  async function get(token, article) {
+    let result = await _get(token, article);
+
+    return result[0];
+  }
+  
+  async function getId(token, article) {
+    let result = await _get(token, article);
+
+    return result[0][datastore.KEY].id;
+  }
+
+  
+/**
+ * PRIVATE FUNCTIONS
+ */
+
+async function _get(token, article) {
     // Get person from token
     let person = await Person.getId(token);
 
@@ -40,18 +57,6 @@ module.exports = function(config) {
     let result = await datastore.runQuery(query);
 
     return result[0];
-  }
-
-  async function get(token, article) {
-    let result = await _get(token, article);
-
-    return result[0];
-  }
-  
-  async function getId(token, article) {
-    let result = await _get(token, article);
-
-    return result[0][datastore.KEY].id;
   }
     
 
