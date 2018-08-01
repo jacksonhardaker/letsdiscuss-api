@@ -30,35 +30,37 @@ module.exports = function(config) {
   async function get(token, article) {
     let result = await _get(token, article);
 
-    return result[0];
+    return result ? result[0] : result;
   }
-  
+
   async function getId(token, article) {
     let result = await _get(token, article);
 
-    return result[0][datastore.KEY].id;
+    return result ? result[0][datastore.KEY].id : result;
   }
 
-  
-/**
- * PRIVATE FUNCTIONS
- */
+  /**
+   * PRIVATE FUNCTIONS
+   */
 
-async function _get(token, article) {
-    // Get person from token
-    let person = await Person.getId(token);
+  async function _get(token, article) {
+    if (token && article) {
+      // Get person from token
+      let person = await Person.getId(token);
 
-    // Create query
-    let query = datastore
-      .createQuery(['Alias'])
-      .filter('article', '=', article)
-      .filter('person', '=', person);
+      // Create query
+      let query = datastore
+        .createQuery(['Alias'])
+        .filter('article', '=', article)
+        .filter('person', '=', person);
 
-    let result = await datastore.runQuery(query);
+      let result = await datastore.runQuery(query);
 
-    return result[0];
+      return result[0];
+    }
+
+    return null;
   }
-    
 
   return {
     create,
