@@ -61,24 +61,59 @@ module.exports = function(config) {
   }
 
   async function get(alias, date, slug) {
-    let query = datastore
-      .createQuery(['Article'])
-      .filter('slug', '=', `${alias}/${date}/${slug}`);
+    let result = await _get(alias, date, slug);
 
-    let result = await datastore.runQuery(query);
-
-    return result[0][0];
+    return result ? result[0] : result;
   }
 
   async function getById(id) {
-    let query = datastore.createQuery(['Article']).filter('id', '=', id);
+    let result = await _getById(id);
 
-    return datastore.runQuery(query);
+    return result ? result[0] : result;
+  }
+
+  async function getId(alias, date, slug) {
+    let result = await _get(alias, date, slug);
+
+    return result ? result[0][datastore.KEY].id : result;
+  }
+
+  /**
+   * PRIVATE FUNCTIONS
+   */
+
+  async function _get(alias, date, slug) {
+    // Create query
+    if ((alias, date, slug)) {
+      let query = datastore
+        .createQuery(['Article'])
+        .filter('slug', '=', `${alias}/${date}/${slug}`);
+
+      let result = await datastore.runQuery(query);
+
+      return result[0];
+    }
+
+    return null;
+  }
+
+  async function _getById(id) {
+    // Create query
+    if (id) {
+      let query = datastore.createQuery(['Article']).filter('id', '=', id);
+
+      let result = await datastore.runQuery(query);
+
+      return result[0];
+    }
+
+    return null;
   }
 
   return {
-    createWithAlias: createWithAlias,
-    get: get,
-    getById: getById
+    createWithAlias,
+    get,
+    getById,
+    getId
   };
 };
