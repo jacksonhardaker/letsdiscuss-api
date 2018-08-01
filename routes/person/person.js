@@ -6,6 +6,26 @@ module.exports = function(config) {
     keyFilename: config.keyFilename
   });
 
+  async function save(token, data) {
+    // Updating existing user?
+    let personId = await getId(token);
+    let key = personId ? datastore.key(['Person', datastore.int(personId)]) : datastore.key('Person');
+
+    let entity = {
+      key: key,
+      data: {
+        googleId: data.profile.id,
+        name: data.profile.displayName,
+        email: data.profile.email,
+        picture: data.profile.raw.picture,
+        gender: data.profile.raw.gender,
+        token: data.token
+      }
+    };
+
+    return await datastore.save(entity);
+  }
+
   async function get(token) {
     let result = await _get(token);
 
@@ -32,7 +52,8 @@ module.exports = function(config) {
   }
 
   return {
-    get: get,
-    getId: getId
+    get,
+    getId,
+    save
   };
 };

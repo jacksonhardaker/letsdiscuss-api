@@ -22,8 +22,8 @@ module.exports = function(server, config) {
 
         return new Promise((resolve, reject) => {
           GoogleAuth.login(
-            request.auth.credentials,
-            params.token ? params.token.trim() : null // Existing token included?
+            params.token ? params.token.trim() : null, // Existing token included?
+            request.auth.credentials
           ).then(personId => {
             resolve({
               token: request.auth.credentials.token
