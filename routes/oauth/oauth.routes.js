@@ -10,6 +10,8 @@ module.exports = function(server, config) {
         strategy: 'google',
         mode: 'try'
       },
+      description: 'Sign up / Log in via Google oAuth',
+      tags: ['api'],
       handler: function(request, h) {
         if (!request.auth.isAuthenticated) {
           return 'Authentication failed due to: ' + request.auth.error.message;
@@ -21,7 +23,7 @@ module.exports = function(server, config) {
         return new Promise((resolve, reject) => {
           GoogleAuth.login(
             request.auth.credentials,
-            params.token ? params.token : null // Existing token included?
+            params.token ? params.token.trim() : null // Existing token included?
           ).then(personId => {
             resolve({
               token: request.auth.credentials.token

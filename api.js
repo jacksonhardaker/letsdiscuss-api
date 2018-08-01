@@ -4,17 +4,38 @@
 const config = require('./config');
 
 /* Require Hapi web framework */
-const Hapi = require('hapi');
 const Bell = require('bell');
+const Hapi = require('hapi');
+const HapiSwagger = require('hapi-swagger');
+const Inert = require('inert');
+const Joi = require('joi');
+const Pack = require('./package');
+const Vision = require('vision');
 
 const internals = {};
 
 internals.start = async function() {
   /* Configure Hapi server */
-  const server = new Hapi.server({
+  const server = await new Hapi.server({
     host: 'localhost',
     port: '3000'
   });
+
+  const swaggerOptions = {
+    info: {
+      title: 'Test API Documentation',
+      version: Pack.version
+    }
+  };
+
+  await server.register([
+    Inert,
+    Vision,
+    {
+      plugin: HapiSwagger,
+      options: swaggerOptions
+    }
+  ]);
 
   // Set cookie definition
   server.state('session', {
@@ -39,11 +60,12 @@ internals.start = async function() {
   });
 
   // Register routes
-  require('./routes/alias/alias.routes')(server, config);
-  require('./routes/article/article.routes')(server, config);
-  require('./routes/comment/comment.routes')(server, config);
-  require('./routes/oauth/oauth.routes')(server, config);
-  require('./routes/person/person.routes')(server, config);
+  // server.realm.modifiers.route.prefix = '/v0';
+  require('./routes/alias/alias.routes')(server, config, Joi);
+  require('./routes/article/article.routes')(server, config, Joi);
+  require('./routes/comment/comment.routes')(server, config, Joi);
+  require('./routes/oauth/oauth.routes')(server, config, Joi);
+  require('./routes/person/person.routes')(server, config, Joi);
 
   // Start the server
   await server.start();

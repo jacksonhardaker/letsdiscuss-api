@@ -61,9 +61,13 @@ module.exports = function(config) {
   }
 
   async function get(alias, date, slug) {
-    let query = datastore.createQuery(['Article']).filter('slug', '=', `${alias}/${date}/${slug}`);
+    let query = datastore
+      .createQuery(['Article'])
+      .filter('slug', '=', `${alias}/${date}/${slug}`);
 
-    return datastore.runQuery(query);
+    let result = await datastore.runQuery(query);
+
+    return result[0][0];
   }
 
   async function getById(id) {
