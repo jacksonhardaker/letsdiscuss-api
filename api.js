@@ -52,11 +52,15 @@ internals.start = async function() {
 
   // Register routes
   // server.realm.modifiers.route.prefix = '/v0';
-  require('./routes/alias/alias.routes')(server, config, Joi);
-  require('./routes/article/article.routes')(server, config, Joi);
-  require('./routes/comment/comment.routes')(server, config, Joi);
-  require('./routes/oauth/oauth.routes')(server, config, Joi);
-  require('./routes/person/person.routes')(server, config, Joi);
+  try {
+    require('./routes/alias/alias.routes')(server, config, Joi);
+    require('./routes/article/article.routes')(server, config, Joi);
+    require('./routes/comment/comment.routes')(server, config, Joi);
+    require('./routes/oauth/oauth.routes')(server, config, Joi);
+    require('./routes/person/person.routes')(server, config, Joi);
+  } catch (err) {
+    console.log(err);
+  }
 
   // Start the server
   await server.start();
