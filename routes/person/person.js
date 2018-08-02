@@ -7,8 +7,12 @@ module.exports = function(config) {
   });
 
   async function save(token, data) {
-    // Updating existing user?
-    let personId = await getId(token);
+    // Updating existing user? TODO: Clean up
+    let idFromToken = await getId(token);
+    let idFromEmail = await getIdByEmail(data.profile.email);
+
+    let personId = idFromToken || idFromEmail;
+
     let key = personId
       ? datastore.key(['Person', datastore.int(personId)])
       : datastore.key('Person');
@@ -40,9 +44,28 @@ module.exports = function(config) {
     return result ? result[0][datastore.KEY].id : result;
   }
 
+  async function getIdByEmail(email) {
+      let result = await _getByEmail(email);
+
+      return result ? result[0][datastore.KEY].id : result;
+  }
+
   /**
    * PRIVATE FUNCTIONS
    */
+
+  async function _getByEmail(email) {
+    // Create query
+    if (email) {
+      let query = datastore.createQuery(['Person']).filter('email', '=', email);
+
+      let result = await datastore.runQuery(query);
+
+      return result[0];
+    }
+
+    return null;
+  }
 
   async function _get(token) {
     // Create query
