@@ -43,7 +43,8 @@ module.exports = function(config) {
 
       return result ? result[0][datastore.KEY].id : result;
     }
-    catch {
+    catch(err) {
+      console.log(err);
       return null;
     }
   }
