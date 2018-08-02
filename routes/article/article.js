@@ -38,8 +38,7 @@ module.exports = function(config) {
     // Get user from token
     let creator = await Person.getId(token);
 
-    let moment = Moment();
-    let slug = `${Utils.slugify(SillyName())}/${moment.format(
+    let slug = `${Utils.slugify(SillyName())}/${Moment().format(
       'YYYY-MM-DD'
     )}/${Utils.slugify(metadata.title)}`;
 
@@ -47,7 +46,8 @@ module.exports = function(config) {
       key: datastore.key(['Article', id ? datastore.int(id) : null]), // Init with allocated id
       data: {
         createdBy: creator,
-        createdDate: moment.format(),
+        createdDate: Moment().toDate(),
+        expires: Moment().add(24, 'hours').toDate(),
         url: url,
         title: metadata.title,
         image: metadata.image,

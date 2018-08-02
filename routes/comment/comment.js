@@ -44,7 +44,7 @@ module.exports = function(config) {
       key: datastore.key(['Comment']), // Init with allocated id
       data: {
         alias: alias,
-        createdDate: Moment().format(),
+        createdDate: Moment().toDate(),
         article: article,
         body: body,
         replyingTo: replyingTo
