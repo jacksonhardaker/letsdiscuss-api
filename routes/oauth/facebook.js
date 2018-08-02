@@ -3,11 +3,10 @@ module.exports = function(config) {
 
   async function login(token, data) {
     return await Person.save(token, {
-      googleId: data.profile.id,
+      facebookId: data.profile.id,
       name: data.profile.displayName,
       email: data.profile.email,
-      picture: data.profile.raw.picture,
-      gender: data.profile.raw.gender,
+      picture: data.profile.picture.data.url,
       token: data.token,
       tokenExpires: data.expiresIn
     });

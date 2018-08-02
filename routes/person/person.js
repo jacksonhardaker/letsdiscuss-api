@@ -9,7 +9,7 @@ module.exports = function(config) {
   async function save(token, data) {
     // Updating existing user? TODO: Clean up
     let idFromToken = await getId(token);
-    let idFromEmail = await getIdByEmail(data.profile.email);
+    let idFromEmail = await getIdByEmail(data.email);
 
     let personId = idFromToken || idFromEmail;
 
@@ -19,14 +19,7 @@ module.exports = function(config) {
 
     let entity = {
       key: key,
-      data: {
-        googleId: data.profile.id,
-        name: data.profile.displayName,
-        email: data.profile.email,
-        picture: data.profile.raw.picture,
-        gender: data.profile.raw.gender,
-        token: data.token
-      }
+      data: data
     };
 
     return await datastore.save(entity);
@@ -45,9 +38,14 @@ module.exports = function(config) {
   }
 
   async function getIdByEmail(email) {
+    try {
       let result = await _getByEmail(email);
 
       return result ? result[0][datastore.KEY].id : result;
+    }
+    catch {
+      return null;
+    }
   }
 
   /**

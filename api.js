@@ -50,15 +50,6 @@ internals.start = async function() {
   // Register bell with the server
   await server.register(Bell);
 
-  server.auth.strategy('google', 'bell', {
-    provider: 'google',
-    password: 'cookie_encryption_password_secure',
-    isSecure: false,
-    clientId: config.oauth2.clientId,
-    clientSecret: config.oauth2.clientSecret,
-    location: server.info.uri
-  });
-
   // Register routes
   // server.realm.modifiers.route.prefix = '/v0';
   require('./routes/alias/alias.routes')(server, config, Joi);
