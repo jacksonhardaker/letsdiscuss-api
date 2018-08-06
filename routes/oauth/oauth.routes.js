@@ -14,6 +14,9 @@ module.exports = function(server, config, Joi) {
 
   server.auth.strategy('facebook', 'bell', {
     provider: 'facebook',
+    providerParams: {
+      display: 'popup'
+    },
     password: 'cookie_encryption_password_secure',
     isSecure: false,
     clientId: config.oauth2.facebook.clientId,
@@ -49,7 +52,12 @@ module.exports = function(server, config, Joi) {
         return await GoogleAuth.login(
           params.token ? params.token.trim() : null, // Existing token included?
           request.auth.credentials
-        );
+        ).then(response => {
+          return `<script>
+            window.opener.postMessage(${JSON.stringify(request.auth.credentials)}, 'http://localhost:8080');
+            window.close();
+          </script>`;
+        });
       }
     }
   });
@@ -82,7 +90,12 @@ module.exports = function(server, config, Joi) {
         return await FacebookAuth.login(
           params.token ? params.token.trim() : null, // Existing token included?
           request.auth.credentials
-        );
+        ).then(response => {
+          return `<script>
+            window.opener.postMessage(${JSON.stringify(request.auth.credentials)}, 'http://localhost:8080');
+            window.close();
+          </script>`;
+        });
       }
     }
   });
