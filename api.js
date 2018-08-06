@@ -18,7 +18,10 @@ internals.start = async function() {
   /* Configure Hapi server */
   const server = await new Hapi.server({
     host: 'localhost',
-    port: '3000'
+    port: '3000',
+    routes: {
+      cors: true
+    }
   });
 
   const swaggerOptions = {
