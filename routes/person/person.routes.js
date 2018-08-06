@@ -10,7 +10,7 @@ module.exports = function(server, config, Joi) {
       validate: {
         query: {
           token: Joi.string()
-            .required()
+            .optional()
             .description('the current token for the Person')
         }
       },
@@ -18,7 +18,9 @@ module.exports = function(server, config, Joi) {
       handler: async (request, h) => {
         let params = request.query;
 
-        let data = await Person.get(params.token.trim());
+        let token = params.token || request.headers.authorization || '';
+
+        let data = await Person.get(token.trim());
 
         return data ? data : h.response().code(404);
       }
