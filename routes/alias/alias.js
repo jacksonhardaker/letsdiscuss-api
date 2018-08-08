@@ -14,7 +14,7 @@ module.exports = function(config) {
     let id = await Person.getId(token);
 
     let entity = {
-      key: datastore.key(['Alias', id ? datastore.int(allocatedId) : null]), // Init with allocated id
+      key: datastore.key(['Alias', allocatedId ? datastore.int(allocatedId) : null]), // Init with allocated id
       data: {
         person: id,
         createdDate: Moment().format(),
