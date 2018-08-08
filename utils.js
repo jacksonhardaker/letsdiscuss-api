@@ -1,9 +1,9 @@
 const Slugify = require('slugify');
 
 function slugify(text) {
-  Slugify(text, {
+  return Slugify(text, {
     replacement: '-',
-    remove: /[$*_+~.()'"!\-:@]/g,
+    remove: /[$*_+~.()'"?!\-:@]/g,
     lower: true
   });
 }
