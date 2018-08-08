@@ -29,7 +29,10 @@ module.exports = function(config) {
       .then(results => {
         return transaction.commit();
       })
-      .catch(() => transaction.rollback());
+      .catch(err => {
+        console.log(err);
+        transaction.rollback();
+      });
   }
 
   async function save(token, url, transaction, id) {
@@ -47,7 +50,9 @@ module.exports = function(config) {
       data: {
         createdBy: creator,
         createdDate: Moment().toDate(),
-        expires: Moment().add(24, 'hours').toDate(),
+        expires: Moment()
+          .add(24, 'hours')
+          .toDate(),
         url: url,
         title: metadata.title,
         image: metadata.image,
