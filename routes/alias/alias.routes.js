@@ -4,7 +4,7 @@ module.exports = function(server, config, Joi) {
 
   server.route({
     method: 'GET',
-    path: '/alias/{articleId}',
+    path: '/alias/current/{articleId}',
     options: {
       description: 'Get an Alias using a token and article',
       validate: {
@@ -23,8 +23,31 @@ module.exports = function(server, config, Joi) {
       handler: async (request, h) => {
         const article = request.params.articleId;
         let params = request.query;
+        let token = params.token || request.headers.authorization || '';
 
-        let data = await Alias.get(params.token.trim(), article);
+        let data = await Alias.getByArticleAndToken(token.trim(), article);
+
+        return data ? data : h.response().code(404);
+       
+      }
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/alias/{id}',
+    options: {
+      description: 'Get an Alias using an id',
+      validate: {
+        params: {
+          id: Joi.string()
+            .required()
+            .description('the alias id')
+        }
+      },
+      tags: ['api'],
+      handler: async (request, h) => {
+        let data = await Alias.get(request.params.id);
 
         return data ? data : h.response().code(404);
        

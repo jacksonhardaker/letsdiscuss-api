@@ -105,7 +105,7 @@ module.exports = function(config) {
   async function _getById(id) {
     // Create query
     if (id) {
-      let query = datastore.createQuery(['Article']).filter('id', '=', id);
+      let query = datastore.createQuery(['Article']).filter('__key__', '=', datastore.key(['Article', datastore.int(id)]));
 
       let result = await datastore.runQuery(query);
 
