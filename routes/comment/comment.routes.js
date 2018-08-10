@@ -11,8 +11,10 @@ module.exports = function(server, config, Joi) {
       validate: {
         query: {
           token: Joi.string()
-            .required()
-            .description('the current token for the Person'),
+            .optional()
+            .description('the current token for the Person')
+        },
+        payload: {
           comment: Joi.string()
             .required()
             .description('the Comment')
@@ -27,8 +29,10 @@ module.exports = function(server, config, Joi) {
       handler: async (request, h) => {
         const article = request.params.articleId;
         let params = request.query;
+        let payload = request.payload;
+        let token = params.token || request.headers.authorization || '';
 
-        return await Comment.leaveComment(params.token.trim(), article, params.comment.trim(), null);
+        return await Comment.leaveComment(token.trim(), article, payload.comment.trim(), null);
       }
     }
   });
@@ -42,8 +46,10 @@ module.exports = function(server, config, Joi) {
       validate: {
         query: {
           token: Joi.string()
-            .required()
-            .description('the current token for the Person'),
+            .optional()
+            .description('the current token for the Person')
+        },
+        payload: {
           comment: Joi.string()
             .required()
             .description('the Comment')
@@ -62,8 +68,10 @@ module.exports = function(server, config, Joi) {
         const article = request.params.articleId;
         const replyingTo = request.params.replyingTo ? request.params.replyingTo : null;
         let params = request.query;
+        let payload = request.payload;
+        let token = params.token || request.headers.authorization || '';
 
-        return await Comment.leaveComment(params.token.trim(), article, params.comment.trim(), replyingTo);
+        return await Comment.leaveComment(token.trim(), article, payload.comment.trim(), replyingTo);
       }
     }
   });
