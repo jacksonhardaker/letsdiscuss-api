@@ -4,7 +4,7 @@ module.exports = function(server, config, Joi) {
 
   server.route({
     method: ['GET'],
-    path: '/comment/{articleId}',
+    path: '/comments/{articleId}',
     options: {
       description:
         'Get all the comments for a given Article',
@@ -23,10 +23,65 @@ module.exports = function(server, config, Joi) {
       tags: ['api'],
       handler: async (request, h) => {
         const article = request.params.articleId;
-        let params = request.query;
-        let token = params.token || request.headers.authorization || '';
+        let token = request.query.token || request.headers.authorization || '';
 
         return await Comment.getAll(article);
+      }
+    }
+  });
+
+  server.route({
+    method: ['GET'],
+    path: '/comment/{articleId}',
+    options: {
+      description:
+        'Get all the top level (not reply) comments for a given Article',
+      validate: {
+        query: {
+          token: Joi.string()
+            .optional()
+            .description('the current token for the Person')
+        },
+        params: {
+          articleId: Joi.string()
+            .required()
+            .description('the article id'),
+        }
+      },
+      tags: ['api'],
+      handler: async (request, h) => {
+        const article = request.params.articleId;
+        let token = request.query.token || request.headers.authorization || '';
+
+        return await Comment.getComments(article);
+      }
+    }
+  });
+
+  server.route({
+    method: ['GET'],
+    path: '/comment/reply{commentId}',
+    options: {
+      description:
+        'Get all the top level (not reply) comments for a given Article',
+      validate: {
+        query: {
+          token: Joi.string()
+            .optional()
+            .description('the current token for the Person')
+        },
+        params: {
+          commentId: Joi.string()
+            .required()
+            .description('the comment id'),
+        }
+      },
+      tags: ['api'],
+      handler: async (request, h) => {
+        const comment = request.params.commentId;
+        let token = request.query.token || request.headers.authorization || '';
+
+        return await Comment.getReplies(comment);
       }
     }
   });
@@ -57,9 +112,8 @@ module.exports = function(server, config, Joi) {
       tags: ['api'],
       handler: async (request, h) => {
         const article = request.params.articleId;
-        let params = request.query;
         let payload = request.payload;
-        let token = params.token || request.headers.authorization || '';
+        let token = request.query.token || request.headers.authorization || '';
 
         return await Comment.leaveComment(token.trim(), article, payload.comment.trim(), null);
       }
