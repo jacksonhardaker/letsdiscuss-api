@@ -41,29 +41,19 @@ module.exports = function(config) {
   async function get(id) {
     let result = await _get(id);
 
-    // Is an alias found?
-    if (result.length === 0) {
-      return null;
-    }
-
-    // Attempt to get URL for picture
-    result[0].pictureUrl = _getPictureUrl(result);
-
-    return result[0];
+    return result[0] ? result[0] : null;
   }
 
   async function getByArticleAndToken(token, article) {
     let result = await _getByArticleAndToken(token, article);
 
-    // Is an alias found?
-    if (result.length === 0) {
-      return null;
-    }
+    return result[0] ? result[0] : null;
+  }
 
-    // Attempt to get URL for picture
-    result[0].pictureUrl = await _getPictureUrl(result);
+  async function getByArticle(article) {
+    let result = await _getByArticle(article);
 
-    return result[0];
+    return result;
   }
 
   async function getId(token, article) {
@@ -80,18 +70,6 @@ module.exports = function(config) {
    * PRIVATE FUNCTIONS
    */
 
-  async function _getPictureUrl(res) {
-    if (res && res[0].picture) {
-      let file = bucket.file(res[0].picture);
-
-      let pictureUrl = await file.getMetadata().then(data => {
-        return data[1].mediaLink;
-      });
-
-      return pictureUrl;
-    }
-  }
-
   function _getRandomAvatar() {
     return new Promise((resolve, reject) => {
       bucket.getFiles({ directory: 'avatars' }, (err, files) => {
@@ -100,6 +78,18 @@ module.exports = function(config) {
         resolve(files[randomIndex].name);
       });
     });
+  }
+
+  async function _getByArticle(article) {
+    if (article) {
+      let query = datastore
+        .createQuery(['Alias'])
+        .filter('article', '=', article);
+
+      return await _runQuery(query);
+    }
+
+    return null;
   }
 
   async function _getByArticleAndToken(token, article) {
@@ -113,9 +103,7 @@ module.exports = function(config) {
         .filter('article', '=', article)
         .filter('person', '=', person);
 
-      let result = await datastore.runQuery(query);
-
-      return result[0];
+      return await _runQuery(query);
     }
 
     return null;
@@ -128,18 +116,59 @@ module.exports = function(config) {
         .createQuery(['Alias'])
         .filter('__key__', '=', datastore.key(['Alias', datastore.int(id)]));
 
-      let result = await datastore.runQuery(query);
-
-      return result[0];
+      return await _runQuery(query);
     }
 
     return null;
+  }
+
+  async function _getPictureUrl(res) {
+    if (res && res.picture) {
+      let file = bucket.file(res.picture);
+
+      let pictureUrl = await file.getMetadata().then(data => {
+        return data[1].mediaLink;
+      });
+
+      return pictureUrl;
+    }
+  }
+
+  async function _mapPictureUrls(aliases) {
+    return new Promise(async (resolve, reject) => {
+      const mappedWithPictureUrl = [];
+
+      for (var i = 0; i < aliases.length; i++) {
+        await mappedWithPictureUrl.push(Object.assign(aliases[i], { pictureUrl: await _getPictureUrl(aliases[i]) }));
+      }
+
+      resolve(mappedWithPictureUrl);
+    });
+  }
+
+  async function _runQuery(query) {
+    let result = await datastore.runQuery(query);
+
+    if (result[0].length > 0) {
+      // Map ids.
+      const mappedWithId = result[0].map(alias => {
+        return Object.assign(alias, { id: alias[datastore.KEY].id });
+      });
+
+      // Map picture urls
+      const mappedWithPictureUrl = _mapPictureUrls(mappedWithId);
+
+      return mappedWithPictureUrl;
+    }
+
+    return [];
   }
 
   return {
     create,
     get,
     getByArticleAndToken,
-    getId
+    getId,
+    getByArticle
   };
 };
