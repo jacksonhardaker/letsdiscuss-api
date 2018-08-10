@@ -2,6 +2,7 @@ module.exports = function(server, config, Joi) {
   /* Require services for querying, creating, and deleting entities */
   const GoogleAuth = require('./google')(config);
   const FacebookAuth = require('./facebook')(config);
+  const Auth = require('./auth.js')(config);
 
   server.auth.strategy('google', 'bell', {
     provider: 'google',
@@ -22,6 +23,33 @@ module.exports = function(server, config, Joi) {
     clientId: config.oauth2.facebook.clientId,
     clientSecret: config.oauth2.facebook.clientSecret,
     location: server.info.uri
+  });
+
+  server.route({
+    method: ['PUT'],
+    path: '/oauth/logout',
+    options: {
+      description: 'Sign out',
+      validate: {
+        query: {
+          token: Joi.string()
+            .optional()
+            .description('the current token for the Person')
+        }
+      },
+      tags: ['api'],
+      handler: async function(request, h) {
+        let token = request.query.token || request.headers.authorization || '';
+
+        return Auth.logout(token)
+          .then(() => {
+            return h.response().code(200);
+          })
+          .catch(err => {
+            return err;
+          });
+      }
+    }
   });
 
   server.route({
@@ -54,7 +82,9 @@ module.exports = function(server, config, Joi) {
           request.auth.credentials
         ).then(response => {
           return `<script>
-            window.opener.postMessage(${JSON.stringify(request.auth.credentials)}, 'http://localhost:8080');
+            window.opener.postMessage(${JSON.stringify(
+              request.auth.credentials
+            )}, 'http://localhost:8080');
             window.close();
           </script>`;
         });
@@ -92,7 +122,9 @@ module.exports = function(server, config, Joi) {
           request.auth.credentials
         ).then(response => {
           return `<script>
-            window.opener.postMessage(${JSON.stringify(request.auth.credentials)}, 'http://localhost:8080');
+            window.opener.postMessage(${JSON.stringify(
+              request.auth.credentials
+            )}, 'http://localhost:8080');
             window.close();
           </script>`;
         });

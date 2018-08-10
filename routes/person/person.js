@@ -25,26 +25,36 @@ module.exports = function(config) {
     return await datastore.save(entity);
   }
 
+  async function logout(token) {
+    let person = await get(token);
+
+    return await datastore.update({
+      key: datastore.key(['Person', datastore.int(person.id)]),
+      data: Object.assign(person, { token: null, tokenExpires: null })
+    });
+  }
+
   async function get(token) {
     let result = await _get(token);
 
-    return result ? result[0] : result;
+    return result[0];
   }
 
   async function getId(token) {
-    let result = await _get(token);
+    try {
+      let result = await _get(token);
+      return result[0].id;
 
-    return result ? result[0][datastore.KEY].id : result;
+    } catch (err) {
+      return null;
+    }
   }
 
   async function getIdByEmail(email) {
     try {
       let result = await _getByEmail(email);
-
-      return result ? result[0][datastore.KEY].id : result;
-    }
-    catch(err) {
-      console.log(err);
+      return result[0].id;
+    } catch (err) {
       return null;
     }
   }
@@ -58,9 +68,7 @@ module.exports = function(config) {
     if (email) {
       let query = datastore.createQuery(['Person']).filter('email', '=', email);
 
-      let result = await datastore.runQuery(query);
-
-      return result[0];
+      return await _runQuery(query);
     }
 
     return null;
@@ -71,9 +79,22 @@ module.exports = function(config) {
     if (token) {
       let query = datastore.createQuery(['Person']).filter('token', '=', token);
 
-      let result = await datastore.runQuery(query);
+      return await _runQuery(query);
+    }
 
-      return result[0];
+    return null;
+  }
+
+  async function _runQuery(query) {
+    let result = await datastore.runQuery(query);
+
+    if (result[0].length > 0) {
+      // Map ids.
+      const mappedWithId = result[0].map(alias => {
+        return Object.assign(alias, { id: alias[datastore.KEY].id });
+      });
+
+      return mappedWithId;
     }
 
     return null;
@@ -82,6 +103,7 @@ module.exports = function(config) {
   return {
     get,
     getId,
-    save
+    save,
+    logout
   };
 };
