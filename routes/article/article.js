@@ -68,6 +68,11 @@ module.exports = function(config) {
   async function get(alias, date, slug) {
     let result = await _get(alias, date, slug);
 
+    // Append id.
+    if (result) {
+      result[0].id = result[0][datastore.KEY].id;
+    }
+
     return result ? result[0] : result;
   }
 
@@ -105,7 +110,9 @@ module.exports = function(config) {
   async function _getById(id) {
     // Create query
     if (id) {
-      let query = datastore.createQuery(['Article']).filter('__key__', '=', datastore.key(['Article', datastore.int(id)]));
+      let query = datastore
+        .createQuery(['Article'])
+        .filter('__key__', '=', datastore.key(['Article', datastore.int(id)]));
 
       let result = await datastore.runQuery(query);
 
