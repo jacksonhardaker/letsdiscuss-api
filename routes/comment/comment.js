@@ -99,14 +99,32 @@ module.exports = function(config) {
     let result = await datastore.runQuery(query);
 
     if (result[0].length > 0) {
+      const article = result[0][0].article;
+
       // Map ids.
       const mappedWithId = result[0].map(comment => {
         return Object.assign(comment, { id: comment[datastore.KEY].id });
       });
 
+      // Sort by date
       mappedWithId.sort(_compareByCreatedDate);
 
-      return mappedWithId;
+      // Get aliases which exist for this article.
+      const aliases = await Alias.getByArticle(article);
+
+      // Map alias to comment.
+      const mappedWithAlias = mappedWithId.map(comment => {
+
+        // Find alias which matches comment
+        const alias = aliases.find(alias => {
+          return comment.alias === alias.id;
+        });
+
+        // Assign alias object.
+        return Object.assign(comment, { alias: alias });
+      });
+
+      return mappedWithAlias;
     }
 
     return [];
