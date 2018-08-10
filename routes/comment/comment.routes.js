@@ -3,6 +3,35 @@ module.exports = function(server, config, Joi) {
   const Comment = require('./comment')(config);
 
   server.route({
+    method: ['GET'],
+    path: '/comment/{articleId}',
+    options: {
+      description:
+        'Get all the comments for a given Article',
+      validate: {
+        query: {
+          token: Joi.string()
+            .optional()
+            .description('the current token for the Person')
+        },
+        params: {
+          articleId: Joi.string()
+            .required()
+            .description('the article id'),
+        }
+      },
+      tags: ['api'],
+      handler: async (request, h) => {
+        const article = request.params.articleId;
+        let params = request.query;
+        let token = params.token || request.headers.authorization || '';
+
+        return await Comment.getAll(article);
+      }
+    }
+  });
+
+  server.route({
     method: ['PUT'],
     path: '/comment/{articleId}',
     options: {
