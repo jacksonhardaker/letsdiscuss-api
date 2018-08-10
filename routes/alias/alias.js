@@ -39,39 +39,48 @@ module.exports = function(config) {
   }
 
   async function get(id) {
-
     let result = await _get(id);
 
-    // Attempt to get URL for picture
-    if (result) {
-      result[0].pictureUrl = _getPictureUrl(result);
+    // Is an alias found?
+    if (result.length === 0) {
+      return null;
     }
 
-    return result ? result[0] : result;
+    // Attempt to get URL for picture
+    result[0].pictureUrl = _getPictureUrl(result);
+
+    return result[0];
   }
 
   async function getByArticleAndToken(token, article) {
     let result = await _getByArticleAndToken(token, article);
 
-    // Attempt to get URL for picture
-    if (result) {
-      result[0].pictureUrl = await _getPictureUrl(result);
+    // Is an alias found?
+    if (result.length === 0) {
+      return null;
     }
 
-    return result ? result[0] : result;
+    // Attempt to get URL for picture
+    result[0].pictureUrl = await _getPictureUrl(result);
+
+    return result[0];
   }
 
-  // async function getId(token, article) {
-  //   let result = await _get(token, article);
+  async function getId(token, article) {
+    let result = await _getByArticleAndToken(token, article);
 
-  //   return result ? result[0][datastore.KEY].id : result;
-  // }
+    if (result.length === 0) {
+      return null;
+    }
+
+    return result[0][datastore.KEY].id;
+  }
 
   /**
    * PRIVATE FUNCTIONS
    */
 
-   async function _getPictureUrl(res) {
+  async function _getPictureUrl(res) {
     if (res && res[0].picture) {
       let file = bucket.file(res[0].picture);
 
@@ -81,7 +90,7 @@ module.exports = function(config) {
 
       return pictureUrl;
     }
-   }
+  }
 
   function _getRandomAvatar() {
     return new Promise((resolve, reject) => {
@@ -115,7 +124,9 @@ module.exports = function(config) {
   async function _get(id) {
     if (id) {
       // Create query
-      let query = datastore.createQuery(['Alias']).filter('__key__', '=', datastore.key(['Alias', datastore.int(id)]));
+      let query = datastore
+        .createQuery(['Alias'])
+        .filter('__key__', '=', datastore.key(['Alias', datastore.int(id)]));
 
       let result = await datastore.runQuery(query);
 
@@ -128,7 +139,7 @@ module.exports = function(config) {
   return {
     create,
     get,
-    getByArticleAndToken
-    // getId
+    getByArticleAndToken,
+    getId
   };
 };
