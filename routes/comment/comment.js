@@ -27,17 +27,20 @@ module.exports = function(config) {
     const transaction = datastore.transaction();
 
     let alias = await Alias.getId(token, article);
+    let allocatedId = null;
 
     if (!alias) {
       // Assign a new alias.
       let allocated = await datastore.allocateIds(datastore.key(['Alias']), 1);
-      alias = allocated[0][0].id;
+      allocatedId = allocated[0][0].id;
     }
 
     return transaction
       .run()
       .then(() => {
-        return Alias.create(token, article, transaction, alias);
+        return allocatedId
+          ? Alias.create(token, article, transaction, allocatedId)
+          : null;
       })
       .then(() => {
         return create(article, alias, text, replyingTo, transaction);
@@ -114,7 +117,6 @@ module.exports = function(config) {
 
       // Map alias to comment.
       const mappedWithAlias = mappedWithId.map(comment => {
-
         // Find alias which matches comment
         const alias = aliases.find(alias => {
           return comment.alias === alias.id;
