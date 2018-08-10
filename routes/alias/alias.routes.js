@@ -22,12 +22,36 @@ module.exports = function(server, config, Joi) {
       tags: ['api'],
       handler: async (request, h) => {
         const article = request.params.articleId;
-        let params = request.query;
-        let token = params.token || request.headers.authorization || '';
+        let token = request.query.token || request.headers.authorization || '';
 
         let data = await Alias.getByArticleAndToken(token.trim(), article);
 
         return data;
+       
+      }
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/alias/all/{articleId}',
+    options: {
+      description: 'Get an Alias using a token and article',
+      validate: {
+        params: {
+          articleId: Joi.string()
+            .required()
+            .description('the article id')
+        }
+      },
+      tags: ['api'],
+      handler: async (request, h) => {
+        const article = request.params.articleId;
+        let token = request.query.token || request.headers.authorization || '';
+
+        let data = await Alias.getByArticle(article);
+
+        return data ? data : h.response().code(404);
        
       }
     }
