@@ -11,8 +11,10 @@ module.exports = function(server, config, Joi) {
       validate: {
         query: {
           token: Joi.string()
-            .required()
-            .description('the current token for the Person'),
+            .optional()
+            .description('the current token for the Person')
+        },
+        payload: {
           url: Joi.string()
             .required()
             .description('the url of the Article to share')
@@ -20,11 +22,12 @@ module.exports = function(server, config, Joi) {
       },
       tags: ['api'],
       handler: async (request, h) => {
-        let params = request.query;
+        let payload = request.payload;
+        let token = request.query.token || request.headers.authorization || '';
 
         return await Article.createWithAlias(
-          params.token.trim(),
-          params.url.trim()
+          token.trim(),
+          payload.url.trim()
         );
       }
     }
@@ -55,6 +58,29 @@ module.exports = function(server, config, Joi) {
         const slug = request.params.slug;
 
         let data = await Article.get(alias, date, slug);
+
+        return data ? data : h.response().code(404);
+      }
+    }
+  });
+
+  server.route({
+    method: ['GET'],
+    path: '/article/{articleId}',
+    options: {
+      description: 'Get an Article using the Article slug',
+      validate: {
+        params: {
+          articleId: Joi.string()
+            .required()
+            .description('the id for the Article')
+        }
+      },
+      tags: ['api'],
+      handler: async (request, h) => {
+        const article = request.params.articleId;
+
+        let data = await Article.getById(article);
 
         return data ? data : h.response().code(404);
       }
