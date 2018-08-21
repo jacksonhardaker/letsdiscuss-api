@@ -1,4 +1,4 @@
-module.exports = function(server, config, Joi) {
+module.exports = function(server, config, Joi, sessions) {
   /* Require services for querying, creating, and deleting entities */
   const GoogleAuth = require('./google')(config);
   const FacebookAuth = require('./facebook')(config);
@@ -41,6 +41,9 @@ module.exports = function(server, config, Joi) {
       handler: async function(request, h) {
         let token = request.query.token || request.headers.authorization || '';
 
+        // Remove from sessions
+        sessions.remove(token);
+
         return Auth.logout(token)
           .then(() => {
             return h.response().code(200);
@@ -76,6 +79,9 @@ module.exports = function(server, config, Joi) {
 
         // Check for previous params
         let params = request.auth.credentials.query;
+
+        // Save to sessions
+        sessions.add(request.auth.credentials);
 
         return await GoogleAuth.login(
           params.token ? params.token.trim() : null, // Existing token included?
@@ -116,6 +122,9 @@ module.exports = function(server, config, Joi) {
 
         // Check for previous params
         let params = request.auth.credentials.query;
+
+        // Save to sessions
+        sessions.add(request.auth.credentials);
 
         return await FacebookAuth.login(
           params.token ? params.token.trim() : null, // Existing token included?
