@@ -35,16 +35,17 @@ module.exports = function(config) {
   }
 
   async function get(token) {
-    let result = await _get(token);
-
-    return result[0];
+    try {
+      return await _get(token);
+    } catch (err) {
+      return null;
+    }
   }
 
   async function getId(token) {
     try {
       let result = await _get(token);
-      return result[0].id;
-
+      return result.id;
     } catch (err) {
       return null;
     }
@@ -53,7 +54,7 @@ module.exports = function(config) {
   async function getIdByEmail(email) {
     try {
       let result = await _getByEmail(email);
-      return result[0].id;
+      return result.id;
     } catch (err) {
       return null;
     }
@@ -68,7 +69,9 @@ module.exports = function(config) {
     if (email) {
       let query = datastore.createQuery(['Person']).filter('email', '=', email);
 
-      return await _runQuery(query);
+      let result = await _runQuery(query);
+
+      return result.length > 0 ? result[0] : null;
     }
 
     return null;
@@ -79,7 +82,9 @@ module.exports = function(config) {
     if (token) {
       let query = datastore.createQuery(['Person']).filter('token', '=', token);
 
-      return await _runQuery(query);
+      let result = await _runQuery(query);
+
+      return result.length > 0 ? result[0] : null;
     }
 
     return null;
