@@ -43,7 +43,7 @@ internals.start = async function() {
 
 
   /** Configure AUTH routes */
-  process.env.REDIRECT_URL = 'http://localhost:3000';
+  process.env.REDIRECT_URL = '"http://localhost:8080"';
 
   // Register bell with the server
   await server.register(Bell);

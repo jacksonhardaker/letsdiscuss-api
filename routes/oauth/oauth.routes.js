@@ -90,7 +90,7 @@ module.exports = function(server, config, Joi, sessions) {
           return `<script>
             window.opener.postMessage(${JSON.stringify(
               request.auth.credentials
-            )}, 'http://localhost:8080');
+            )}, "${config.frontendUri}");
             window.close();
           </script>`;
         });
@@ -133,7 +133,7 @@ module.exports = function(server, config, Joi, sessions) {
           return `<script>
             window.opener.postMessage(${JSON.stringify(
               request.auth.credentials
-            )}, 'http://localhost:8080');
+            )}, "${config.frontendUri}");
             window.close();
           </script>`;
         });
