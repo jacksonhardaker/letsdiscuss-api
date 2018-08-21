@@ -15,19 +15,21 @@ module.exports = function(config) {
   async function createWithAlias(token, url) {
     const transaction = datastore.transaction();
 
-    let allocated = await datastore.allocateIds(datastore.key(['Article']), 1);
-    let allocatedId = allocated[0][0].id;
+    const allocatedKey = await datastore.allocateIds(datastore.key(['Article']), 1);
+    const allocatedArticleId = allocatedKey[0][0].id;
 
     return transaction
       .run()
       .then(() => {
-        return save(token, url, transaction, allocatedId);
+        return save(token, url, transaction, allocatedArticleId);
       })
       .then(() => {
-        return Alias.create(token, allocatedId, transaction);
+        return Alias.create(token, allocatedArticleId, transaction);
       })
-      .then(results => {
-        return transaction.commit();
+      .then(async () => {
+        await transaction.commit();
+
+        return await getById(allocatedArticleId);
       })
       .catch(err => {
         console.log(err);
@@ -54,6 +56,7 @@ module.exports = function(config) {
           .add(24, 'hours')
           .toDate(),
         url: url,
+        source: metadata.source,
         title: metadata.title,
         image: metadata.image,
         author: metadata.author,
