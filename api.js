@@ -11,6 +11,7 @@ const Inert = require('inert');
 const Joi = require('joi');
 const Pack = require('./package');
 const Vision = require('vision');
+const sessions = require('./sessions');
 
 const internals = {};
 
@@ -40,12 +41,6 @@ internals.start = async function() {
     }
   ]);
 
-  // Set cookie definition
-  server.state('session', {
-    ttl: 24 * 60 * 60 * 1000, // One day
-    isSameSite: 'Lax',
-    encoding: 'base64json'
-  });
 
   /** Configure AUTH routes */
   process.env.REDIRECT_URL = 'http://localhost:3000';
@@ -59,8 +54,9 @@ internals.start = async function() {
     require('./routes/alias/alias.routes')(server, config, Joi);
     require('./routes/article/article.routes')(server, config, Joi);
     require('./routes/comment/comment.routes')(server, config, Joi);
-    require('./routes/oauth/oauth.routes')(server, config, Joi);
+    require('./routes/oauth/oauth.routes')(server, config, Joi, sessions);
     require('./routes/person/person.routes')(server, config, Joi);
+    require('./routes/token/token.routes')(server, config, Joi, sessions);
   } catch (err) {
     console.log(err);
   }
