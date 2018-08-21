@@ -47,7 +47,7 @@ module.exports = function(config) {
   async function getByArticleAndToken(token, article) {
     let result = await _getByArticleAndToken(token, article);
 
-    return result[0] ? result[0] : null;
+    return result && result[0] ? result[0] : null;
   }
 
   async function getByArticle(article) {
