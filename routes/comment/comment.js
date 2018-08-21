@@ -1,9 +1,6 @@
 module.exports = function(config) {
   const Datastore = require('@google-cloud/datastore');
   const Moment = require('moment');
-  const Utils = require('../../utils');
-  const SillyName = require('sillyname');
-  const Person = require('../person/person')(config);
   const Alias = require('../alias/alias')(config);
 
   const datastore = new Datastore({
@@ -21,6 +18,10 @@ module.exports = function(config) {
 
   async function getReplies(comment) {
     return await _getReplies(comment);
+  }
+
+  async function getComment(comment) {
+    return await _getComment(comment);
   }
 
   async function leaveComment(token, article, text, replyingTo) {
@@ -45,8 +46,10 @@ module.exports = function(config) {
       .then(() => {
         return create(article, alias, text, replyingTo, transaction);
       })
-      .then(() => {
-        return transaction.commit();
+      .then(comment => {
+        transaction.commit();
+
+        return getComment(comment.key.id);
       })
       .catch(err => {
         console.log(err);
@@ -55,8 +58,9 @@ module.exports = function(config) {
   }
 
   async function create(article, alias, body, replyingTo, transaction) {
+    let key = await datastore.allocateIds(datastore.key(['Comment']), 1);
     let entity = {
-      key: datastore.key(['Comment']), // Init with allocated id
+      key: key[0][0], // Create with allocated id
       data: {
         alias: alias,
         createdDate: Moment().toDate(),
@@ -66,7 +70,9 @@ module.exports = function(config) {
       }
     };
 
-    return transaction ? transaction.save(entity) : datastore.save(entity);
+    transaction ? transaction.save(entity) : datastore.save(entity);
+
+    return entity;
   }
 
   /**
@@ -93,6 +99,25 @@ module.exports = function(config) {
         .filter('replyingTo', '=', comment);
 
       return await _runQuery(query);
+    }
+
+    return null;
+  }
+
+  async function _getComment(comment) {
+    // Create query
+    if (comment) {
+      let query = datastore
+        .createQuery(['Comment'])
+        .filter(
+          '__key__',
+          '=',
+          datastore.key(['Comment', datastore.int(comment)])
+        );
+
+      let result = await _runQuery(query);
+
+      return result.length > 0 ? result[0] : null;
     }
 
     return null;
@@ -185,6 +210,7 @@ module.exports = function(config) {
     leaveComment,
     getAll,
     getReplies,
-    getComments
+    getComments,
+    getComment
   };
 };

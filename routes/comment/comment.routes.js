@@ -60,7 +60,7 @@ module.exports = function(server, config, Joi) {
 
   server.route({
     method: ['GET'],
-    path: '/comment/reply{commentId}',
+    path: '/comment/reply/{commentId}',
     options: {
       description:
         'Get all the top level (not reply) comments for a given Article',
@@ -82,6 +82,34 @@ module.exports = function(server, config, Joi) {
         let token = request.query.token || request.headers.authorization || '';
 
         return await Comment.getReplies(comment);
+      }
+    }
+  });
+
+  server.route({
+    method: ['GET'],
+    path: '/comment/single/{commentId}',
+    options: {
+      description:
+        'Get a single comment',
+      validate: {
+        query: {
+          token: Joi.string()
+            .optional()
+            .description('the current token for the Person')
+        },
+        params: {
+          commentId: Joi.string()
+            .required()
+            .description('the comment id'),
+        }
+      },
+      tags: ['api'],
+      handler: async (request, h) => {
+        const comment = request.params.commentId;
+        let token = request.query.token || request.headers.authorization || '';
+
+        return await Comment.getComment(comment);
       }
     }
   });
