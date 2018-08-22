@@ -60,5 +60,5 @@ typings/
 # next.js build output
 .next
 
-#key.json
-#config.js
+key.json
+config.js
