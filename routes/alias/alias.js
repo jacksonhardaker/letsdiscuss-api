@@ -4,6 +4,7 @@ module.exports = function(config) {
   const SillyName = require('sillyname');
   const Moment = require('moment');
   const Person = require('../person/person')(config);
+  const Utils = require('../../utils');
 
   const datastore = new Datastore({
     projectId: config.projectId,
@@ -18,6 +19,8 @@ module.exports = function(config) {
   const bucket = storage.bucket(`${config.bucketName}`);
 
   async function create(token, article, transaction, allocatedId) {
+    Utils.log(create, arguments);
+
     // Get person from token
     let id = await Person.getId(token);
 
@@ -39,24 +42,31 @@ module.exports = function(config) {
   }
 
   async function get(id) {
+    Utils.log(get, arguments);
     let result = await _get(id);
 
     return result[0] ? result[0] : null;
   }
 
   async function getByArticleAndToken(token, article) {
+    Utils.log(getByArticleAndToken, arguments);
+
     let result = await _getByArticleAndToken(token, article);
 
     return result && result[0] ? result[0] : null;
   }
 
   async function getByArticle(article) {
+    Utils.log(getByArticle, arguments);
+
     let result = await _getByArticle(article);
 
     return result;
   }
 
   async function getId(token, article) {
+    Utils.log(getId, arguments);
+
     let result = await _getByArticleAndToken(token, article);
 
     if (result.length === 0) {
