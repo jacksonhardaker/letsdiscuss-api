@@ -2,6 +2,7 @@ module.exports = function(config) {
   const Datastore = require('@google-cloud/datastore');
   const Moment = require('moment');
   const Alias = require('../alias/alias')(config);
+  const Utils = require('../../utils');
 
   const datastore = new Datastore({
     projectId: config.projectId,
@@ -21,10 +22,14 @@ module.exports = function(config) {
   }
 
   async function getComment(comment) {
+    Utils.log(getComment, arguments);
+
     return await _getComment(comment);
   }
 
   async function leaveComment(token, article, text, replyingTo) {
+    Utils.log(leaveComment, arguments);
+
     const transaction = datastore.transaction();
 
     let alias = await Alias.getId(token, article);
@@ -39,15 +44,13 @@ module.exports = function(config) {
     return transaction
       .run()
       .then(() => {
-        return allocatedId
-          ? Alias.create(token, article, transaction, allocatedId)
-          : null;
+        return allocatedId ? Alias.create(token, article, transaction, allocatedId) : null;
       })
       .then(() => {
-        return create(article, alias, text, replyingTo, transaction);
+        return create(article, allocatedId || alias, text, replyingTo, transaction);
       })
-      .then(comment => {
-        transaction.commit();
+      .then(async comment => {
+        await transaction.commit();
 
         return getComment(comment.key.id);
       })
@@ -98,10 +101,12 @@ module.exports = function(config) {
         .createQuery(['Comment'])
         .filter('replyingTo', '=', comment);
 
-      return await _runQuery(query);
+      let result = await _runQuery(query);
+
+      return result ? result : [];
     }
 
-    return null;
+    return [];
   }
 
   async function _getComment(comment) {
@@ -117,7 +122,15 @@ module.exports = function(config) {
 
       let result = await _runQuery(query);
 
-      return result.length > 0 ? result[0] : null;
+      if (result && result.length > 0) {
+        const resultWithReplies = Object.assign(result[0], {
+          replies: await _getReplies(comment)
+        });
+
+        return resultWithReplies;
+      } else {
+        return null;
+      }
     }
 
     return null;
